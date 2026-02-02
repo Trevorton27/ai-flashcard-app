@@ -1,0 +1,302 @@
+'use client';
+import React, { useEffect, useState } from 'react';
+import FlashcardCard from '../../components/FlashcardCard';
+
+interface Flashcard {
+    id: string;
+    front: string;
+    back: string;
+    category?: string;
+}
+
+const FlashcardsPage = () => {
+    const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [studyMode, setStudyMode] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [selectedOption, setSelectedOption] = useState<string | null>(null);
+    const [quizOptions, setQuizOptions] = useState<string[]>([]);
+    const [mobileCardIndex, setMobileCardIndex] = useState(0);
+    const [touchStart, setTouchStart] = useState<number | null>(null);
+    const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+    // Minimum swipe distance (in px)
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e: React.TouchEvent) => {
+        setTouchEnd(null);
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e: React.TouchEvent) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+        if (isLeftSwipe) {
+            nextMobileCard();
+        }
+        if (isRightSwipe) {
+            prevMobileCard();
+        }
+    };
+
+    useEffect(() => {
+        const fetchFlashcards = async () => {
+            try {
+                const response = await fetch('/api/flashcards');
+                const data = await response.json();
+                setFlashcards(data);
+            } catch (error) {
+                console.error('Failed to fetch flashcards', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchFlashcards();
+    }, []);
+
+    // Generate quiz options when the card changes
+    useEffect(() => {
+        if (flashcards.length > 0 && studyMode) {
+            generateOptions();
+        }
+    }, [currentIndex, studyMode, flashcards]);
+
+    const extractReading = (back: string) => {
+        const match = back.match(/\((.*?)\)/);
+        return match ? match[1] : back;
+    };
+
+    const extractKanji = (back: string) => {
+        return back.split('(')[0].trim();
+    };
+
+    const generateOptions = () => {
+        const currentCard = flashcards[currentIndex];
+        const correctReading = extractReading(currentCard.back);
+
+        // Get all other possible readings as distractors
+        const otherReadings = flashcards
+            .filter((_, idx) => idx !== currentIndex)
+            .map(card => extractReading(card.back))
+            .filter((reading, index, self) => reading !== correctReading && self.indexOf(reading) === index);
+
+        // Shuffle and pick 2 distractors
+        const distractors = otherReadings
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 2);
+
+        // If we don't have enough distractors (rare), add some generic ones or just handle it
+        while (distractors.length < 2) {
+            distractors.push('---');
+        }
+
+        // Combine, shuffle, and set
+        const options = [correctReading, ...distractors].sort(() => Math.random() - 0.5);
+        setQuizOptions(options);
+        setSelectedOption(null);
+    };
+
+    const nextCard = () => {
+        setCurrentIndex((prev) => (prev + 1) % flashcards.length);
+    };
+
+    const prevCard = () => {
+        setCurrentIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length);
+    };
+
+    const handleOptionSelect = (option: string) => {
+        setSelectedOption(option);
+    };
+
+    const nextMobileCard = () => {
+        setMobileCardIndex((prev) => (prev + 1) % flashcards.length);
+    };
+
+    const prevMobileCard = () => {
+        setMobileCardIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length);
+    };
+
+    const clearAllFlashcards = async () => {
+        if (!confirm('Are you sure you want to clear all flashcards? This cannot be undone.')) return;
+
+        try {
+            const response = await fetch('/api/flashcards', { method: 'DELETE' });
+            if (response.ok) {
+                setFlashcards([]);
+                setStudyMode(false);
+            } else {
+                console.error('Failed to clear flashcards');
+            }
+        } catch (error) {
+            console.error('Error clearing flashcards:', error);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[40vh]">
+                <div className="text-zinc-500 animate-pulse text-base">Loading your study cards...</div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-200 pb-6">
+                <div>
+                    <h1 className="text-3xl font-semibold text-zinc-900 tracking-tight">My Flashcards</h1>
+                    <p className="text-zinc-500 mt-1">
+                        {flashcards.length} cards available for study
+                    </p>
+                </div>
+                <div className="flex items-center gap-3">
+                    {flashcards.length > 0 && (
+                        <button
+                            onClick={clearAllFlashcards}
+                            className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium text-red-600 bg-white ring-1 ring-zinc-300 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                        >
+                            Clear All
+                        </button>
+                    )}
+                    <button
+                        onClick={() => setStudyMode(!studyMode)}
+                        className={`inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium transition focus:outline-none focus:ring-2 ${studyMode
+                            ? 'bg-white text-zinc-900 ring-1 ring-zinc-300 hover:bg-zinc-50 focus:ring-zinc-900/20'
+                            : 'bg-zinc-900 text-white hover:bg-zinc-800 focus:ring-zinc-900/20'
+                            }`}
+                    >
+                        {studyMode ? 'Exit Study Mode' : 'Enter Study Mode'}
+                    </button>
+                </div>
+            </div>
+
+            {flashcards.length === 0 ? (
+                <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-zinc-300">
+                    <p className="text-zinc-500 text-base">No flashcards found. Upload some vocabulary first!</p>
+                </div>
+            ) : studyMode ? (
+                <div className="flex flex-col items-center gap-8 py-10">
+                    <div className="text-xs font-medium text-zinc-600 bg-zinc-100 px-4 py-2 rounded-full">
+                        Card {currentIndex + 1} of {flashcards.length}
+                    </div>
+
+                    <div className="w-full max-w-lg">
+                        <FlashcardCard
+                            flashcard={{
+                                ...flashcards[currentIndex],
+                                // Japanese First: Kanji on front, English on back
+                                front: extractKanji(flashcards[currentIndex].back),
+                                back: flashcards[currentIndex].front,
+                            }}
+                            quizOptions={quizOptions}
+                            selectedOption={selectedOption}
+                            onOptionSelect={handleOptionSelect}
+                            correctReading={extractReading(flashcards[currentIndex].back)}
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-4 w-full max-w-lg">
+                        <button
+                            onClick={prevCard}
+                            className="flex-1 inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-zinc-900 ring-1 ring-zinc-300 transition hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                        >
+                            Previous
+                        </button>
+                        <button
+                            onClick={nextCard}
+                            className="flex-1 inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <>
+                    {/* Mobile Carousel View */}
+                    <div className="block sm:hidden">
+                        <div
+                            className="flex flex-col items-center gap-6 py-4"
+                            onTouchStart={onTouchStart}
+                            onTouchMove={onTouchMove}
+                            onTouchEnd={onTouchEnd}
+                        >
+                            <div className="text-xs font-medium text-zinc-600 bg-zinc-100 px-4 py-2 rounded-full">
+                                Card {mobileCardIndex + 1} of {flashcards.length}
+                            </div>
+
+                            <div className="w-full max-w-lg px-4 animate-[fadeIn_0.3s_ease-in-out]">
+                                <FlashcardCard
+                                    key={flashcards[mobileCardIndex].id}
+                                    flashcard={{
+                                        ...flashcards[mobileCardIndex],
+                                        // Japanese First: Kanji on front, English on back
+                                        front: extractKanji(flashcards[mobileCardIndex].back),
+                                        back: flashcards[mobileCardIndex].front,
+                                    }}
+                                    correctReading={extractReading(flashcards[mobileCardIndex].back)}
+                                />
+                            </div>
+
+                            {/* Pagination dots */}
+                            {flashcards.length > 1 && (
+                                <div className="flex items-center justify-center gap-2">
+                                    {flashcards.map((_, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setMobileCardIndex(index)}
+                                            className={`h-2 rounded-full transition-all ${index === mobileCardIndex
+                                                ? 'w-6 bg-zinc-900'
+                                                : 'w-2 bg-zinc-300 hover:bg-zinc-400'
+                                                }`}
+                                            aria-label={`Go to card ${index + 1}`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="flex items-center gap-4 w-full max-w-lg px-4">
+                                <button
+                                    onClick={prevMobileCard}
+                                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-zinc-900 ring-1 ring-zinc-300 transition hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                                >
+                                    ← Previous
+                                </button>
+                                <button
+                                    onClick={nextMobileCard}
+                                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                                >
+                                    Next →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Desktop Grid View */}
+                    <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {flashcards.map((flashcard) => (
+                            <FlashcardCard
+                                key={flashcard.id}
+                                flashcard={{
+                                    ...flashcard,
+                                    // Japanese First: Kanji on front, English on back
+                                    front: extractKanji(flashcard.back),
+                                    back: flashcard.front,
+                                }}
+                                correctReading={extractReading(flashcard.back)}
+                            />
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
+export default FlashcardsPage;
