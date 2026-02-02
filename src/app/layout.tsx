@@ -1,6 +1,11 @@
 import Navigation from '../components/Navigation';
 import './globals.css';
 
+export const metadata = {
+  title: 'AI Flashcards',
+  description: 'Master your Japanese and English vocabulary with AI-powered flashcards',
+};
+
 export default function RootLayout({
   children,
 }: {
