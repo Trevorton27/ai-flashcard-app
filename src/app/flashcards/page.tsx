@@ -142,17 +142,17 @@ const FlashcardsPage = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[40vh]">
-                <div className="text-zinc-500 animate-pulse text-base">Loading your study cards...</div>
+                <div className="text-zinc-500 dark:text-zinc-400 animate-pulse text-base">Loading your study cards...</div>
             </div>
         );
     }
 
     return (
         <div className="space-y-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-200 pb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-6">
                 <div>
-                    <h1 className="text-3xl font-semibold text-zinc-900 tracking-tight">My Flashcards</h1>
-                    <p className="text-zinc-500 mt-1">
+                    <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">My Flashcards</h1>
+                    <p className="text-zinc-500 dark:text-zinc-400 mt-1">
                         {flashcards.length} cards available for study
                     </p>
                 </div>
@@ -160,7 +160,7 @@ const FlashcardsPage = () => {
                     {flashcards.length > 0 && (
                         <button
                             onClick={clearAllFlashcards}
-                            className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium text-red-600 bg-white ring-1 ring-zinc-300 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+                            className="inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium text-red-600 dark:text-red-400 bg-white dark:bg-zinc-900 ring-1 ring-zinc-300 dark:ring-zinc-700 transition hover:bg-red-50 dark:hover:bg-red-950 focus:outline-none focus:ring-2 focus:ring-red-500/20"
                         >
                             Clear All
                         </button>
@@ -168,8 +168,8 @@ const FlashcardsPage = () => {
                     <button
                         onClick={() => setStudyMode(!studyMode)}
                         className={`inline-flex items-center justify-center rounded-xl px-5 py-3 text-sm font-medium transition focus:outline-none focus:ring-2 ${studyMode
-                            ? 'bg-white text-zinc-900 ring-1 ring-zinc-300 hover:bg-zinc-50 focus:ring-zinc-900/20'
-                            : 'bg-zinc-900 text-white hover:bg-zinc-800 focus:ring-zinc-900/20'
+                            ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 ring-1 ring-zinc-300 dark:ring-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 focus:ring-zinc-900/20'
+                            : 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 focus:ring-zinc-900/20'
                             }`}
                     >
                         {studyMode ? 'Exit Study Mode' : 'Enter Study Mode'}
@@ -178,12 +178,12 @@ const FlashcardsPage = () => {
             </div>
 
             {flashcards.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-zinc-300">
-                    <p className="text-zinc-500 text-base">No flashcards found. Upload some vocabulary first!</p>
+                <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
+                    <p className="text-zinc-500 dark:text-zinc-400 text-base">No flashcards found. Upload some vocabulary first!</p>
                 </div>
             ) : studyMode ? (
                 <div className="flex flex-col items-center gap-8 py-10">
-                    <div className="text-xs font-medium text-zinc-600 bg-zinc-100 px-4 py-2 rounded-full">
+                    <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-full">
                         Card {currentIndex + 1} of {flashcards.length}
                     </div>
 
@@ -205,13 +205,13 @@ const FlashcardsPage = () => {
                     <div className="flex items-center gap-4 w-full max-w-lg">
                         <button
                             onClick={prevCard}
-                            className="flex-1 inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-zinc-900 ring-1 ring-zinc-300 transition hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                            className="flex-1 inline-flex items-center justify-center rounded-xl bg-white dark:bg-zinc-900 px-5 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 ring-1 ring-zinc-300 dark:ring-zinc-700 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
                         >
                             Previous
                         </button>
                         <button
                             onClick={nextCard}
-                            className="flex-1 inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                            className="flex-1 inline-flex items-center justify-center rounded-xl bg-zinc-900 dark:bg-zinc-100 px-5 py-3 text-sm font-medium text-white dark:text-zinc-900 transition hover:bg-zinc-800 dark:hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
                         >
                             Next
                         </button>
@@ -227,7 +227,7 @@ const FlashcardsPage = () => {
                             onTouchMove={onTouchMove}
                             onTouchEnd={onTouchEnd}
                         >
-                            <div className="text-xs font-medium text-zinc-600 bg-zinc-100 px-4 py-2 rounded-full">
+                            <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-full">
                                 Card {mobileCardIndex + 1} of {flashcards.length}
                             </div>
 
@@ -252,8 +252,8 @@ const FlashcardsPage = () => {
                                             key={index}
                                             onClick={() => setMobileCardIndex(index)}
                                             className={`h-2 rounded-full transition-all ${index === mobileCardIndex
-                                                ? 'w-6 bg-zinc-900'
-                                                : 'w-2 bg-zinc-300 hover:bg-zinc-400'
+                                                ? 'w-6 bg-zinc-900 dark:bg-zinc-100'
+                                                : 'w-2 bg-zinc-300 dark:bg-zinc-700 hover:bg-zinc-400 dark:hover:bg-zinc-600'
                                                 }`}
                                             aria-label={`Go to card ${index + 1}`}
                                         />
@@ -264,13 +264,13 @@ const FlashcardsPage = () => {
                             <div className="flex items-center gap-4 w-full max-w-lg px-4">
                                 <button
                                     onClick={prevMobileCard}
-                                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-medium text-zinc-900 ring-1 ring-zinc-300 transition hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-white dark:bg-zinc-900 px-5 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 ring-1 ring-zinc-300 dark:ring-zinc-700 transition hover:bg-zinc-50 dark:hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
                                 >
                                     ← Previous
                                 </button>
                                 <button
                                     onClick={nextMobileCard}
-                                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+                                    className="flex-1 inline-flex items-center justify-center rounded-xl bg-zinc-900 dark:bg-zinc-100 px-5 py-3 text-sm font-medium text-white dark:text-zinc-900 transition hover:bg-zinc-800 dark:hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
                                 >
                                     Next →
                                 </button>

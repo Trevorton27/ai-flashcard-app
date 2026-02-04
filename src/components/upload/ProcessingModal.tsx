@@ -19,11 +19,11 @@ export default function ProcessingModal({ progress, message, status }: Processin
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm ring-1 ring-zinc-200 p-8">
+    <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 p-8">
       <div className="text-center mb-6">
-        <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg
-            className="w-8 h-8 text-zinc-600 animate-spin"
+            className="w-8 h-8 text-zinc-600 dark:text-zinc-400 animate-spin"
             fill="none"
             viewBox="0 0 24 24"
           >
@@ -42,21 +42,21 @@ export default function ProcessingModal({ progress, message, status }: Processin
             />
           </svg>
         </div>
-        <h3 className="text-xl font-semibold text-zinc-900 mb-2">
+        <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
           {status === 'saving' ? 'Saving Vocabulary...' : 'Processing Your Content'}
         </h3>
-        <p className="text-sm text-zinc-600">{message}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p>
       </div>
 
       {/* Progress Bar */}
       <div className="mb-6">
-        <div className="flex justify-between text-xs text-zinc-500 mb-2">
+        <div className="flex justify-between text-xs text-zinc-500 dark:text-zinc-400 mb-2">
           <span>Progress</span>
           <span>{Math.round(progress)}%</span>
         </div>
-        <div className="h-2 bg-zinc-100 rounded-full overflow-hidden">
+        <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
           <div
-            className="h-full bg-zinc-900 rounded-full transition-all duration-300 ease-out"
+            className="h-full bg-zinc-900 dark:bg-zinc-100 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -73,29 +73,29 @@ export default function ProcessingModal({ progress, message, status }: Processin
               key={step.id}
               className={`flex items-center gap-3 text-sm ${
                 step.completed
-                  ? 'text-green-700'
+                  ? 'text-green-700 dark:text-green-400'
                   : isActive
-                  ? 'text-zinc-900'
-                  : 'text-zinc-400'
+                  ? 'text-zinc-900 dark:text-zinc-100'
+                  : 'text-zinc-400 dark:text-zinc-500'
               }`}
             >
               <div
                 className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
                   step.completed
-                    ? 'bg-green-100'
+                    ? 'bg-green-100 dark:bg-green-900/30'
                     : isActive
-                    ? 'bg-zinc-900'
-                    : 'bg-zinc-100'
+                    ? 'bg-zinc-900 dark:bg-zinc-100'
+                    : 'bg-zinc-100 dark:bg-zinc-800'
                 }`}
               >
                 {step.completed ? (
-                  <svg className="w-3 h-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-3 h-3 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                   </svg>
                 ) : isActive ? (
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                  <div className="w-2 h-2 bg-white dark:bg-zinc-900 rounded-full animate-pulse" />
                 ) : (
-                  <div className="w-2 h-2 bg-zinc-300 rounded-full" />
+                  <div className="w-2 h-2 bg-zinc-300 dark:bg-zinc-600 rounded-full" />
                 )}
               </div>
               <span className={step.completed ? 'line-through' : ''}>
@@ -106,7 +106,7 @@ export default function ProcessingModal({ progress, message, status }: Processin
         })}
       </div>
 
-      <p className="text-xs text-zinc-500 text-center mt-6">
+      <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center mt-6">
         This may take a moment depending on the amount of content...
       </p>
     </div>

@@ -254,14 +254,14 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
   // Show success message
   if (state.status === 'success') {
     return (
-      <div className="bg-white rounded-2xl shadow-sm ring-1 ring-zinc-200 p-8 text-center">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 p-8 text-center">
+        <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-xl font-semibold text-zinc-900 mb-2">Success!</h3>
-        <p className="text-zinc-600">{state.progressMessage}</p>
+        <h3 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Success!</h3>
+        <p className="text-zinc-600 dark:text-zinc-400">{state.progressMessage}</p>
       </div>
     );
   }
@@ -269,13 +269,13 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
   return (
     <div className="space-y-6">
       {/* Input Mode Tabs */}
-      <div className="flex border-b border-zinc-200">
+      <div className="flex border-b border-zinc-200 dark:border-zinc-700">
         <button
           onClick={() => setInputMode('file')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
             inputMode === 'file'
-              ? 'border-zinc-900 text-zinc-900'
-              : 'border-transparent text-zinc-500 hover:text-zinc-700'
+              ? 'border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100'
+              : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
           }`}
         >
           Upload File
@@ -284,8 +284,8 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
           onClick={() => setInputMode('text')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
             inputMode === 'text'
-              ? 'border-zinc-900 text-zinc-900'
-              : 'border-transparent text-zinc-500 hover:text-zinc-700'
+              ? 'border-zinc-900 dark:border-zinc-100 text-zinc-900 dark:text-zinc-100'
+              : 'border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300'
           }`}
         >
           Paste Text
@@ -300,10 +300,10 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
           onDragLeave={handleDragLeave}
           className={`border-2 border-dashed rounded-xl p-8 text-center transition ${
             isDragging
-              ? 'border-zinc-900 bg-zinc-50'
+              ? 'border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800'
               : state.file
-              ? 'border-green-500 bg-green-50'
-              : 'border-zinc-300 hover:border-zinc-400'
+              ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+              : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600'
           }`}
         >
           <input
@@ -317,13 +317,13 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
 
           {state.file ? (
             <div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-zinc-900">{state.file.name}</p>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{state.file.name}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 {(state.file.size / 1024).toFixed(1)} KB
               </p>
               <button
@@ -331,22 +331,22 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
                   setState(prev => ({ ...prev, file: null }));
                   if (fileInputRef.current) fileInputRef.current.value = '';
                 }}
-                className="mt-3 text-sm text-red-600 hover:text-red-700"
+                className="mt-3 text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
               >
                 Remove file
               </button>
             </div>
           ) : (
             <label htmlFor="file-upload" className="cursor-pointer">
-              <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-3">
                 <svg className="w-6 h-6 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-zinc-900">
-                Drop files here or <span className="text-indigo-600">browse</span>
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                Drop files here or <span className="text-indigo-600 dark:text-indigo-400">browse</span>
               </p>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 Supports TXT, CSV, JSON, PDF, DOCX, Images
               </p>
             </label>
@@ -361,17 +361,17 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
             value={state.textInput}
             onChange={(e) => setState(prev => ({ ...prev, textInput: e.target.value }))}
             placeholder="Paste vocabulary here...&#10;&#10;Examples:&#10;- One word per line&#10;- Comma-separated words&#10;- JSON array of terms&#10;- Mixed English and Japanese"
-            className="w-full h-48 rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 resize-none"
+            className="w-full h-48 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-900/20 dark:focus:ring-zinc-100/20 resize-none"
           />
-          <p className="text-xs text-zinc-500 mt-2">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">
             Enter vocabulary in any format - AI will process and translate automatically
           </p>
         </div>
       )}
 
       {/* Options */}
-      <div className="bg-zinc-50 rounded-xl p-4 space-y-3">
-        <h4 className="text-sm font-medium text-zinc-900">Processing Options</h4>
+      <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 space-y-3">
+        <h4 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Processing Options</h4>
         <div className="grid grid-cols-2 gap-3">
           {[
             { key: 'autoTranslate' as const, label: 'Auto-translate missing languages' },
@@ -384,9 +384,9 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
                 type="checkbox"
                 checked={state.options[key]}
                 onChange={() => handleOptionChange(key)}
-                className="w-4 h-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                className="w-4 h-4 rounded border-zinc-300 dark:border-zinc-600 text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-700 focus:ring-zinc-900 dark:focus:ring-zinc-100"
               />
-              <span className="text-sm text-zinc-700">{label}</span>
+              <span className="text-sm text-zinc-700 dark:text-zinc-300">{label}</span>
             </label>
           ))}
         </div>
@@ -394,13 +394,13 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
 
       {/* Error Message */}
       {state.error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-          <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
+          <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div>
-            <p className="text-sm font-medium text-red-800">Error</p>
-            <p className="text-sm text-red-700">{state.error}</p>
+            <p className="text-sm font-medium text-red-800 dark:text-red-300">Error</p>
+            <p className="text-sm text-red-700 dark:text-red-400">{state.error}</p>
           </div>
         </div>
       )}
@@ -409,7 +409,7 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
       <button
         onClick={handleProcess}
         disabled={state.status !== 'idle' && state.status !== 'error' || (inputMode === 'file' ? !state.file : !state.textInput.trim())}
-        className="w-full inline-flex items-center justify-center rounded-xl bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:bg-zinc-300 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
+        className="w-full inline-flex items-center justify-center rounded-xl bg-zinc-900 dark:bg-zinc-100 px-5 py-3 text-sm font-medium text-white dark:text-zinc-900 transition hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:bg-zinc-300 dark:disabled:bg-zinc-700 disabled:text-zinc-500 dark:disabled:text-zinc-500 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-zinc-900/20"
       >
         <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

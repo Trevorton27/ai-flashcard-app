@@ -51,17 +51,17 @@ const FlashcardCard: React.FC<FlashcardProps> = ({
           }`}
       >
         {/* Front */}
-        <div className="absolute inset-0 backface-hidden bg-white rounded-2xl shadow-sm ring-1 ring-zinc-200 p-6 flex flex-col items-center justify-center text-center">
+        <div className="absolute inset-0 backface-hidden bg-white dark:bg-zinc-900 rounded-2xl shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-800 p-6 flex flex-col items-center justify-center text-center">
           <div className="flex-1 flex flex-col items-center justify-center w-full">
             {/* Kana reading above kanji */}
             {correctReading && (
-              <div className="text-lg sm:text-xl text-zinc-600 font-medium mb-2">
+              <div className="text-lg sm:text-xl text-zinc-600 dark:text-zinc-400 font-medium mb-2">
                 {correctReading}
               </div>
             )}
 
             {/* Kanji */}
-            <h2 className="text-4xl sm:text-5xl font-semibold text-zinc-900 tracking-tight">
+            <h2 className="text-4xl sm:text-5xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">
               {flashcard.front}
             </h2>
 
@@ -71,13 +71,13 @@ const FlashcardCard: React.FC<FlashcardProps> = ({
                   const isSelected = selectedOption === option;
                   const isCorrect = option === correctReading;
 
-                  let buttonStyles = "bg-white text-zinc-900 ring-1 ring-zinc-200 hover:bg-zinc-50";
+                  let buttonStyles = "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 ring-1 ring-zinc-200 dark:ring-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-700";
                   if (isSelected) {
                     buttonStyles = isCorrect
-                      ? "bg-emerald-50 text-emerald-700 ring-2 ring-emerald-500"
-                      : "bg-red-50 text-red-700 ring-2 ring-red-500";
+                      ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-2 ring-emerald-500"
+                      : "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 ring-2 ring-red-500";
                   } else if (selectedOption && isCorrect) {
-                    buttonStyles = "bg-emerald-50 text-emerald-700 ring-2 ring-emerald-500 opacity-80";
+                    buttonStyles = "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-2 ring-emerald-500 opacity-80";
                   }
 
                   return (
@@ -95,7 +95,7 @@ const FlashcardCard: React.FC<FlashcardProps> = ({
             )}
 
             {!quizOptions && !correctReading && flashcard.category && (
-              <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 mt-3">
+              <span className="inline-flex items-center rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 mt-3">
                 {flashcard.category}
               </span>
             )}
@@ -107,13 +107,13 @@ const FlashcardCard: React.FC<FlashcardProps> = ({
         </div>
 
         {/* Back */}
-        <div className="absolute inset-0 backface-hidden bg-zinc-900 rounded-2xl shadow-sm p-6 flex flex-col items-center justify-center text-center rotate-y-180">
+        <div className="absolute inset-0 backface-hidden bg-zinc-900 dark:bg-zinc-100 rounded-2xl shadow-sm p-6 flex flex-col items-center justify-center text-center rotate-y-180">
           <div className="flex-1 flex flex-col items-center justify-center">
-            <h2 className="text-xl sm:text-2xl font-medium text-white tracking-tight leading-relaxed">
+            <h2 className="text-xl sm:text-2xl font-medium text-white dark:text-zinc-900 tracking-tight leading-relaxed">
               {flashcard.back}
             </h2>
           </div>
-          <div className="mt-6 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em]">
+          <div className="mt-6 text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.2em]">
             English Meaning
           </div>
         </div>
