@@ -4,10 +4,10 @@ import {
   ProcessingResult,
   FileType,
   UploadOptions,
-  Language
+  Language,
+  VOCABULARY_CATEGORIES
 } from './types';
 import {
-  extractVocabulary,
   extractFromImage,
   detectLanguage,
   parseTextContent,
@@ -18,6 +18,7 @@ import {
   createProcessingResult,
   deduplicateVocabulary
 } from './formatter';
+import openai, { MODELS, AI_SETTINGS } from './openai';
 
 const DEFAULT_OPTIONS: UploadOptions = {
   autoTranslate: true,
@@ -60,15 +61,17 @@ export async function processVocabularyUpload(
       const jsonData = JSON.parse(content);
       return processJsonInput(jsonData, opts);
     } else if (typeof content === 'string') {
-      // Text-based content
       detectedLanguage = await detectLanguage(content);
 
       if (fileType === 'csv') {
+        // CSV: parse locally then translate (1 OpenAI call)
         const rows = parseCSVContent(content);
         extractedTerms = processCSVRows(rows, detectedLanguage);
       } else {
-        // Use AI extraction for text content
-        extractedTerms = await extractVocabulary(content, fileType, detectedLanguage);
+        // Text: extract + translate in a single OpenAI call
+        const combined = await extractAndTranslate(content, detectedLanguage);
+        const deduped = deduplicateVocabulary(combined);
+        return await createProcessingResult(deduped);
       }
     }
 
@@ -89,13 +92,12 @@ export async function processVocabularyUpload(
       };
     }
 
-    // Step 2: Translate terms
+    // Translate extracted terms (CSV / image paths)
     let translatedVocabulary: TranslatedVocabulary[] = [];
 
     if (opts.autoTranslate) {
       translatedVocabulary = await translateVocabulary(extractedTerms);
     } else {
-      // Just format without translation
       translatedVocabulary = extractedTerms.map(t => ({
         english: t.language === 'en' ? t.term : '',
         japaneseKanji: t.language === 'ja' ? t.term : '',
@@ -293,4 +295,72 @@ export function detectFileType(
   }
 
   return 'text';
+}
+
+/**
+ * Extracts vocabulary AND translates it in a single OpenAI call.
+ * Replaces the two-step extractVocabulary → translateVocabulary flow for text inputs.
+ */
+async function extractAndTranslate(
+  content: string,
+  detectedLanguage: Language
+): Promise<TranslatedVocabulary[]> {
+  const categories = VOCABULARY_CATEGORIES.join(', ');
+
+  const systemPrompt = `You are a Japanese-English vocabulary extraction and translation assistant.
+
+Extract meaningful vocabulary terms from the text and provide translations in one step.
+
+Rules:
+1. Skip common/function words (articles, prepositions, conjunctions, basic verbs like "is", "are")
+2. For English terms → provide Japanese kanji and hiragana reading
+3. For Japanese terms → provide English translation
+4. Assign a category from: ${categories}
+5. If a term has multiple common meanings, set needsClarification: true and list options
+
+Return ONLY a JSON object in this format:
+{
+  "vocabulary": [
+    {
+      "english": "variable",
+      "japaneseKanji": "変数",
+      "hiragana": "へんすう",
+      "category": "programming_fundamentals",
+      "confidence": 0.95,
+      "needsClarification": false,
+      "originalLanguage": "en"
+    }
+  ]
+}`;
+
+  const userPrompt = `Language detected: ${detectedLanguage}. Extract and translate vocabulary from:\n\n${content.substring(0, 8000)}`;
+
+  const response = await openai.chat.completions.create({
+    model: MODELS.FAST,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    temperature: AI_SETTINGS.temperature,
+    max_tokens: AI_SETTINGS.maxTokens,
+    response_format: { type: 'json_object' }
+  });
+
+  const responseText = response.choices[0]?.message?.content || '{"vocabulary":[]}';
+  const parsed = JSON.parse(responseText);
+  const items: any[] = parsed.vocabulary || [];
+
+  return items
+    .filter(item => item.english && item.japaneseKanji)
+    .map(item => ({
+      english: item.english || '',
+      japaneseKanji: item.japaneseKanji || '',
+      hiragana: item.hiragana || '',
+      category: item.category || 'general',
+      confidence: item.confidence ?? 0.8,
+      needsClarification: item.needsClarification || false,
+      clarificationOptions: item.clarificationOptions || undefined,
+      originalTerm: item.english || item.japaneseKanji,
+      originalLanguage: (item.originalLanguage as Language) || detectedLanguage
+    }));
 }
