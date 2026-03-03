@@ -130,8 +130,18 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
       clearInterval(progressInterval);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Processing failed');
+        let message = 'Processing failed';
+        if (response.status === 504 || response.status === 408) {
+          message = 'Request timed out. Try a smaller file or fewer words at a time.';
+        } else {
+          try {
+            const errorData = await response.json();
+            message = errorData.error || message;
+          } catch {
+            // Response was not JSON (e.g. Vercel HTML error page)
+          }
+        }
+        throw new Error(message);
       }
 
       const result = await response.json();
@@ -172,8 +182,14 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save');
+        let message = 'Failed to save';
+        try {
+          const errorData = await response.json();
+          message = errorData.error || message;
+        } catch {
+          // Response was not JSON
+        }
+        throw new Error(message);
       }
 
       const result = await response.json();

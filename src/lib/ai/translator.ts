@@ -94,7 +94,7 @@ For ambiguous terms:
 
   try {
     const response = await openai.chat.completions.create({
-      model: MODELS.ADVANCED,
+      model: MODELS.FAST,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
