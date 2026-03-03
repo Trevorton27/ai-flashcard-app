@@ -1,7 +1,9 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Suspense } from 'react';
 import ThemeToggle from './ThemeToggle';
+import SearchBar from './SearchBar';
 
 const Navigation = () => {
     const pathname = usePathname();
@@ -15,10 +17,13 @@ const Navigation = () => {
     return (
         <nav className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur border-b border-zinc-200 dark:border-zinc-800">
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    <Link href="/" className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+                <div className="flex justify-between items-center h-16 gap-4">
+                    <Link href="/" className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 shrink-0">
                         AI Flashcards
                     </Link>
+                    <Suspense fallback={null}>
+                        <SearchBar />
+                    </Suspense>
                     <div className="flex items-center gap-2">
                         <ul className="flex space-x-1 sm:space-x-2">
                             {navItems.map((item) => {

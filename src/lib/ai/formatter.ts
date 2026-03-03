@@ -140,7 +140,7 @@ export async function createProcessingResult(
 }
 
 /**
- * Saves confirmed vocabulary to the database
+ * Saves confirmed vocabulary to the database and records an Upload entry
  */
 export async function saveVocabulary(
   flashcards: FormattedFlashcard[],
@@ -149,6 +149,11 @@ export async function saveVocabulary(
   let saved = 0;
   let replaced = 0;
   let skipped = 0;
+
+  // Create the upload record first (counts updated at the end)
+  const upload = await db.upload.create({
+    data: { saved: 0, replaced: 0, skipped: 0 }
+  });
 
   for (const flashcard of flashcards) {
     const action = duplicateActions?.get(flashcard.front.toLowerCase());
@@ -175,7 +180,8 @@ export async function saveVocabulary(
           data: {
             front: flashcard.front,
             back: flashcard.back,
-            category: flashcard.category
+            category: flashcard.category,
+            uploadId: upload.id
           }
         });
         replaced++;
@@ -185,10 +191,16 @@ export async function saveVocabulary(
 
     // Default: create new
     await db.flashcard.create({
-      data: flashcard
+      data: { ...flashcard, uploadId: upload.id }
     });
     saved++;
   }
+
+  // Update upload record with final counts
+  await db.upload.update({
+    where: { id: upload.id },
+    data: { saved, replaced, skipped }
+  });
 
   return { saved, replaced, skipped };
 }

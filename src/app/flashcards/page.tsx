@@ -1,5 +1,6 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import FlashcardCard from '../../components/FlashcardCard';
 
 interface Flashcard {
@@ -9,9 +10,20 @@ interface Flashcard {
     category?: string;
 }
 
+const extractReading = (back: string) => {
+    const match = back.match(/\((.*?)\)/);
+    return match ? match[1] : back;
+};
+
+const extractKanji = (back: string) => {
+    return back.split('(')[0].trim();
+};
+
 const FlashcardsPage = () => {
     const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
     const [loading, setLoading] = useState(true);
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams.get('q') || '';
     const [studyMode, setStudyMode] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -19,6 +31,15 @@ const FlashcardsPage = () => {
     const [mobileCardIndex, setMobileCardIndex] = useState(0);
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+    const filteredFlashcards = searchQuery
+        ? flashcards.filter((card) => {
+              const q = searchQuery.toLowerCase();
+              const kanji = extractKanji(card.back).toLowerCase();
+              const reading = extractReading(card.back).toLowerCase();
+              return card.front.toLowerCase().includes(q) || kanji.includes(q) || reading.includes(q);
+          })
+        : flashcards;
 
     // Minimum swipe distance (in px)
     const minSwipeDistance = 50;
@@ -61,28 +82,19 @@ const FlashcardsPage = () => {
         fetchFlashcards();
     }, []);
 
-    // Generate quiz options when the card changes
+    // Reset indices when search query changes
     useEffect(() => {
-        if (flashcards.length > 0 && studyMode) {
-            generateOptions();
-        }
-    }, [currentIndex, studyMode, flashcards]);
-
-    const extractReading = (back: string) => {
-        const match = back.match(/\((.*?)\)/);
-        return match ? match[1] : back;
-    };
-
-    const extractKanji = (back: string) => {
-        return back.split('(')[0].trim();
-    };
+        setCurrentIndex(0);
+        setMobileCardIndex(0);
+    }, [searchQuery]);
 
     const generateOptions = () => {
-        const currentCard = flashcards[currentIndex];
+        const currentCard = filteredFlashcards[currentIndex];
+        if (!currentCard) return;
         const correctReading = extractReading(currentCard.back);
 
         // Get all other possible readings as distractors
-        const otherReadings = flashcards
+        const otherReadings = filteredFlashcards
             .filter((_, idx) => idx !== currentIndex)
             .map(card => extractReading(card.back))
             .filter((reading, index, self) => reading !== correctReading && self.indexOf(reading) === index);
@@ -92,23 +104,29 @@ const FlashcardsPage = () => {
             .sort(() => Math.random() - 0.5)
             .slice(0, 2);
 
-        // If we don't have enough distractors (rare), add some generic ones or just handle it
         while (distractors.length < 2) {
             distractors.push('---');
         }
 
-        // Combine, shuffle, and set
         const options = [correctReading, ...distractors].sort(() => Math.random() - 0.5);
         setQuizOptions(options);
         setSelectedOption(null);
     };
 
+    // Generate quiz options when the card changes
+    useEffect(() => {
+        if (filteredFlashcards.length > 0 && studyMode) {
+            generateOptions();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex, studyMode, searchQuery, flashcards]);
+
     const nextCard = () => {
-        setCurrentIndex((prev) => (prev + 1) % flashcards.length);
+        setCurrentIndex((prev) => (prev + 1) % filteredFlashcards.length);
     };
 
     const prevCard = () => {
-        setCurrentIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length);
+        setCurrentIndex((prev) => (prev - 1 + filteredFlashcards.length) % filteredFlashcards.length);
     };
 
     const handleOptionSelect = (option: string) => {
@@ -116,11 +134,11 @@ const FlashcardsPage = () => {
     };
 
     const nextMobileCard = () => {
-        setMobileCardIndex((prev) => (prev + 1) % flashcards.length);
+        setMobileCardIndex((prev) => (prev + 1) % filteredFlashcards.length);
     };
 
     const prevMobileCard = () => {
-        setMobileCardIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length);
+        setMobileCardIndex((prev) => (prev - 1 + filteredFlashcards.length) % filteredFlashcards.length);
     };
 
     const clearAllFlashcards = async () => {
@@ -153,7 +171,9 @@ const FlashcardsPage = () => {
                 <div>
                     <h1 className="text-3xl font-semibold text-zinc-900 dark:text-zinc-100 tracking-tight">My Flashcards</h1>
                     <p className="text-zinc-500 dark:text-zinc-400 mt-1">
-                        {flashcards.length} cards available for study
+                        {searchQuery
+                            ? `${filteredFlashcards.length} of ${flashcards.length} cards`
+                            : `${flashcards.length} cards available for study`}
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -177,28 +197,32 @@ const FlashcardsPage = () => {
                 </div>
             </div>
 
-            {flashcards.length === 0 ? (
+            {filteredFlashcards.length === 0 ? (
                 <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
-                    <p className="text-zinc-500 dark:text-zinc-400 text-base">No flashcards found. Upload some vocabulary first!</p>
+                    <p className="text-zinc-500 dark:text-zinc-400 text-base">
+                        {searchQuery
+                            ? `No cards match "${searchQuery}".`
+                            : 'No flashcards found. Upload some vocabulary first!'}
+                    </p>
                 </div>
             ) : studyMode ? (
                 <div className="flex flex-col items-center gap-8 py-10">
                     <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-full">
-                        Card {currentIndex + 1} of {flashcards.length}
+                        Card {currentIndex + 1} of {filteredFlashcards.length}
                     </div>
 
                     <div className="w-full max-w-lg">
                         <FlashcardCard
                             flashcard={{
-                                ...flashcards[currentIndex],
+                                ...filteredFlashcards[currentIndex],
                                 // Japanese First: Kanji on front, English on back
-                                front: extractKanji(flashcards[currentIndex].back),
-                                back: flashcards[currentIndex].front,
+                                front: extractKanji(filteredFlashcards[currentIndex].back),
+                                back: filteredFlashcards[currentIndex].front,
                             }}
                             quizOptions={quizOptions}
                             selectedOption={selectedOption}
                             onOptionSelect={handleOptionSelect}
-                            correctReading={extractReading(flashcards[currentIndex].back)}
+                            correctReading={extractReading(filteredFlashcards[currentIndex].back)}
                         />
                     </div>
 
@@ -228,26 +252,26 @@ const FlashcardsPage = () => {
                             onTouchEnd={onTouchEnd}
                         >
                             <div className="text-xs font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 px-4 py-2 rounded-full">
-                                Card {mobileCardIndex + 1} of {flashcards.length}
+                                Card {mobileCardIndex + 1} of {filteredFlashcards.length}
                             </div>
 
                             <div className="w-full max-w-lg px-4 animate-[fadeIn_0.3s_ease-in-out]">
                                 <FlashcardCard
-                                    key={flashcards[mobileCardIndex].id}
+                                    key={filteredFlashcards[mobileCardIndex].id}
                                     flashcard={{
-                                        ...flashcards[mobileCardIndex],
+                                        ...filteredFlashcards[mobileCardIndex],
                                         // Japanese First: Kanji on front, English on back
-                                        front: extractKanji(flashcards[mobileCardIndex].back),
-                                        back: flashcards[mobileCardIndex].front,
+                                        front: extractKanji(filteredFlashcards[mobileCardIndex].back),
+                                        back: filteredFlashcards[mobileCardIndex].front,
                                     }}
-                                    correctReading={extractReading(flashcards[mobileCardIndex].back)}
+                                    correctReading={extractReading(filteredFlashcards[mobileCardIndex].back)}
                                 />
                             </div>
 
                             {/* Pagination dots */}
-                            {flashcards.length > 1 && (
+                            {filteredFlashcards.length > 1 && (
                                 <div className="flex items-center justify-center gap-2">
-                                    {flashcards.map((_, index) => (
+                                    {filteredFlashcards.map((_, index) => (
                                         <button
                                             key={index}
                                             onClick={() => setMobileCardIndex(index)}
@@ -280,7 +304,7 @@ const FlashcardsPage = () => {
 
                     {/* Desktop Grid View */}
                     <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {flashcards.map((flashcard) => (
+                        {filteredFlashcards.map((flashcard) => (
                             <FlashcardCard
                                 key={flashcard.id}
                                 flashcard={{
@@ -299,4 +323,14 @@ const FlashcardsPage = () => {
     );
 };
 
-export default FlashcardsPage;
+export default function Page() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center min-h-[40vh]">
+                <div className="text-zinc-500 dark:text-zinc-400 animate-pulse text-base">Loading your study cards...</div>
+            </div>
+        }>
+            <FlashcardsPage />
+        </Suspense>
+    );
+}
