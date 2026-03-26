@@ -146,6 +146,10 @@ export default function EnhancedUploadForm({ onComplete }: EnhancedUploadFormPro
 
       const result = await response.json();
 
+      if (result.status === 'error') {
+        throw new Error(result.errors?.[0] || 'Processing failed with no details');
+      }
+
       setState(prev => ({
         ...prev,
         status: 'preview',

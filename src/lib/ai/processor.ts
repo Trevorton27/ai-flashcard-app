@@ -342,12 +342,18 @@ Return ONLY a JSON object in this format:
       { role: 'user', content: userPrompt }
     ],
     temperature: AI_SETTINGS.temperature,
-    max_tokens: AI_SETTINGS.maxTokens,
+    max_tokens: 16000, // gpt-4o-mini max; needed for large vocabulary batches
     response_format: { type: 'json_object' }
   });
 
   const responseText = response.choices[0]?.message?.content || '{"vocabulary":[]}';
-  const parsed = JSON.parse(responseText);
+  let parsed: any;
+  try {
+    parsed = JSON.parse(responseText);
+  } catch {
+    console.error('extractAndTranslate: failed to parse OpenAI response:', responseText.slice(0, 200));
+    throw new Error('AI returned malformed JSON — try again or reduce input size');
+  }
   const items: any[] = parsed.vocabulary || [];
 
   return items
